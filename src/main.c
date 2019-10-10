@@ -23,7 +23,9 @@ int main(int ac, char **av){
 		*/
 		printf("info: formatting %s\n", *av);
 		if(strstr(*av, ".c") || strstr(*av, ".cc") ||
-		   strstr(*av, ".cpp") || strstr(*av, ".cxx")){
+		   strstr(*av, ".cpp") || strstr(*av, ".cxx") ||
+		   strstr(*av, ".h") || strstr(*av, ".hpp") ||
+		   strstr(*av, ".hxx")){
 			obj = fwriter_new(cstr_digest(license_file_path), *av, C_FILE,1 );
 		}else if(strstr(*av, ".py")){
 			obj = fwriter_new(cstr_digest(license_file_path), *av, PYTHON_FILE,1);
