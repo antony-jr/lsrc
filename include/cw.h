@@ -12,8 +12,7 @@ void cw_free(cw_t*);
 int cw_start(cw_t*);
 int cw_end(cw_t*);
 int cw_write_line(cw_t*,const char *);
-int cw_write_char(cw_t*,char c);
 
-char *cw_get_string(cw_t*);
+const char *cw_digest(cw_t*);
 
 #endif /* CW_H_INCLUDED */

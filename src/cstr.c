@@ -14,12 +14,14 @@ static int grow(cstr_t obj){
 	if(obj == NULL)
 		return -1;
 
-	if(obj->capacity <= obj->pos){
+	if(obj->pos >= obj->capacity){
 		guard = realloc(obj->buffer,
-				sizeof *(obj->buffer) * (obj->capacity + INITIAL_BUFFER_SIZE));
+				sizeof(char) * (obj->capacity + INITIAL_BUFFER_SIZE));
 		if(!guard)
 			return -1;
 		obj->capacity += INITIAL_BUFFER_SIZE;
+		memset(guard + obj->pos, 0, sizeof(char)*(obj->capacity - obj->pos)); 
+		obj->buffer = guard;
 	}
 	return 0;
 }
