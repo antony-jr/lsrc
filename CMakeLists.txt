@@ -13,8 +13,8 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 # Include Directories.
 include_directories(include)
 
-add_executable(lrc )
-target_include_directories(hpack PUBLIC . include)
+add_executable(lsrc include/cw.h include/cstr.h src/cw.c src/cstr.c src/main.c)
+target_include_directories(lsrc PUBLIC . include)
 install(
 	TARGETS lsrc
 	RUNTIME DESTINATION bin
