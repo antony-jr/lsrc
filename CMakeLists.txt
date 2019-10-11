@@ -13,7 +13,15 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 # Include Directories.
 include_directories(include)
 
-add_executable(lsrc include/cw.h include/cstr.h include/fwriter.h src/cw.c src/cstr.c src/fwriter.c src/main.c)
+add_executable(lsrc include/cw.h
+	            include/logger.h
+		    include/cstr.h
+		    include/fwriter.h
+		    src/logger.c
+		    src/cw.c
+		    src/cstr.c
+		    src/fwriter.c
+		    src/main.c)
 target_include_directories(lsrc PUBLIC . include)
 install(
 	TARGETS lsrc

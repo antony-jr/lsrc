@@ -59,6 +59,8 @@ int cw_end(cw_t *r){
 int cw_write_line(cw_t *r, const char *line){
 	if(!r || !r->is_started)
 		return -1;
+	if(*line == '\0')
+		return 0;
 	if(cstr_append(r->buffer, r->line_start))
 		return -1;
 	if(cstr_append(r->buffer, line))

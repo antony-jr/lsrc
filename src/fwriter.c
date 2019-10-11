@@ -18,6 +18,11 @@ struct _fwriter_t {
 static cstr_t get_line(FILE *fp){
 	cstr_t r = cstr_new();
 	int c = 0;
+	
+	if(feof(fp)){
+		cstr_free(r);
+		return NULL;
+	}
 	while((c = getc(fp)) != EOF){
 		if(cstr_append_char(r, c)){
 			cstr_free(r);
@@ -26,10 +31,6 @@ static cstr_t get_line(FILE *fp){
 		if(c == '\n'){
 			break;
 		}
-	}
-	if(c == EOF){
-		cstr_free(r);
-		return NULL;
 	}
 	return r;
 }
@@ -84,7 +85,6 @@ int fwriter_exec(fwriter_t obj){
 	int c = 0;
 	FILE *fp = NULL;
 	cw_t *writer = NULL;
-	const char *s = NULL;
 	const char *start = NULL,
 	           *end = NULL;
 	if(obj == NULL)
@@ -113,29 +113,12 @@ int fwriter_exec(fwriter_t obj){
 		cstr_free(path);
 		return -1;
 	}
-	cstr_free(path);
 	while((c = getc(obj->file)) != EOF)
 		putc(c, fp);
+	
 	fclose(fp);
-	rewind(obj->file);
-
-	if(obj->is_replace){
-		if(obj->type == C_FILE){
-			line = get_line(obj->file);
-			if(strcmp(cstr_digest(line), start)){
-				cstr_free(line);
-				rewind(obj->file);
-			}else{
-				while(strcmp(cstr_digest(line), end)){
-					cstr_free(line);
-					line = get_line(obj->file);	
-				}
-				cstr_free(line);
-			}
-		}
-		/* TODO: add more source file support. */
-	}
-
+	fclose(obj->file);
+	
 	cw_start(writer);
 	while((line = get_line(obj->license)) != NULL){
 		cw_write_line(writer, cstr_digest(line));	
@@ -143,21 +126,49 @@ int fwriter_exec(fwriter_t obj){
 	}
 	cw_end(writer);
 
-	s = cw_digest(writer);
+	if(!(obj->file = fopen(cstr_digest(path), "r"))){
+		cw_free(writer);
+		cstr_free(path);
+		return -1;
+	}
+	cstr_free(path);
 
 	if(!(fp = fopen(cstr_digest(obj->out_file_name), "w"))){
 		cw_free(writer);
 		return -1;
 	}
-	
 	/* first copy the copyright stuff from the writer. */
-	while(*s)
-		putc(*s++, fp);
+	fprintf(fp, "%s" , cw_digest(writer));
 
-	/* simply copy the contents of the file.*/
-	while((c = getc(obj->file)) != EOF)
-		putc(c, fp);
-
+	c = 0; /* is continue */
+	while((line = get_line(obj->file)) != NULL){
+		if(obj->is_replace){
+			if(obj->type == C_FILE){
+				if(!strcmp(cstr_digest(line), start)){
+					c = 1;
+					cstr_free(line);
+					continue;
+				}
+				else if(!strcmp(cstr_digest(line), end)){
+					c = 0;
+					cstr_free(line);
+					continue;
+				}
+			}
+			
+		}
+		if(c){
+			cstr_free(line);
+			continue;
+		}
+		if(fprintf(fp, "%s", cstr_digest(line)) < 0){
+			fclose(fp);
+			cw_free(writer);
+			cstr_free(line);
+			return -1;
+		}
+		cstr_free(line);
+	}
 	fclose(fp);
 	cw_free(writer);
 	return 0;
