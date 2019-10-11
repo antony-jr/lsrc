@@ -4,9 +4,9 @@
 struct _cw_t;
 typedef struct _cw_t cw_t;
 
-cw_t *cw_new(/*what to write on start of multiline comment=*/const char *, 
-	     /*what to write on each line of comment=*/const char *, 
-	     /*what to write on finish of the multiline comment=*/const char *);
+cw_t *cw_new(/*what to write on start of multiline comment=*/const char *,
+        /*what to write on each line of comment=*/const char *,
+        /*what to write on finish of the multiline comment=*/const char *);
 void cw_free(cw_t*);
 
 int cw_start(cw_t*);
