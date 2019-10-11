@@ -12,20 +12,18 @@ int printl(log_class_t class, const char *fmt, ...) {
     time(&current_time);
     time_info = localtime(&current_time);
     strftime(time_string, sizeof(time_string), "%H:%M:%S", time_info);
-    printf("[ %s ] ", time_string);
+    fprintf(stderr,"[ %s ] ", time_string);
     if(class == info) {
-        printf("    \e[0;34mINFO\e[0m ");
+        fprintf(stderr,"    \e[0;34mINFO\e[0m ");
     } else if(class == warning) {
-        printf(" \e[0;33mWARNING\e[0m ");
+        fprintf(stderr," \e[0;33mWARNING\e[0m ");
     } else {
-        printf("   \e[0;31mFATAL\e[0m ");
+        fprintf(stderr,"   \e[0;31mFATAL\e[0m ");
     }
-    putchar(' ');
-    putchar(':');
-    putchar(' ');
-    vprintf(fmt, ap);
-    putchar('.');
-    putchar('\n');
+    fprintf(stderr, " : ");
+    vfprintf(stderr, fmt, ap);
+    putc('.',stderr);
+    putc('\n',stderr);
     va_end(ap);
     return 0;
 }
