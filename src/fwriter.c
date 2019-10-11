@@ -198,8 +198,11 @@ int fwriter_exec(fwriter_t obj){
 			continue;
 		}
 		if(fprintf(fp, "%s", cstr_digest(line)) < 0){
+			printl(fatal, "cannot write to output file, giving up");
 			fclose(file);
-			fclose(fp);
+			if(fp != stdout){ 
+				fclose(fp);
+			}
 			cw_free(writer);
 			cstr_free(line);
 			return -1;
@@ -207,7 +210,9 @@ int fwriter_exec(fwriter_t obj){
 		cstr_free(line);
 	}
 	fclose(file);
-	fclose(fp);
+	if(fp != stdout){
+		fclose(fp);
+	}
 	cw_free(writer);
 	printl(info, "successfully finished writing");
 	return 0;

@@ -93,7 +93,6 @@ int cstr_list_set(cstr_list_t obj, size_t index, cstr_t str){
 
 	if(index >= obj->capacity){ /* have to reallocate. */
 		guard = realloc(obj->list, (sizeof(*guard)) * (obj->capacity + index + BUFFER_CAP));
-		memset(obj->list + obj->capacity, 0, sizeof(*guard) * (index + BUFFER_CAP));
 		if(!guard){
 			return -1;
 		}
