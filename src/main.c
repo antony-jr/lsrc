@@ -25,11 +25,14 @@
 #include <fwriter.h>
 #include <cstr.h>
 #include <cstr_list.h>
-#include <logger.h>
 #include <string.h>
+#include <cutelog.h>
 
 #define True 1
 #define False 0
+
+static const char *star_emoji = "🌟";
+static const char *heart_emoji = "💖";
 
 static void print_header();
 static void print_usage(const char*);
@@ -44,6 +47,7 @@ int main(int ac, char **av) {
     cstr_t output = NULL;
     cstr_t prog_name = cstr_new_ex(*av);
     cstr_list_t files = cstr_list_new_ex();
+    cutelog_t log_ctx = cutelog_new();
 
     /* Print version and other stuff. */
     print_header();
@@ -52,14 +56,13 @@ int main(int ac, char **av) {
         goto prog_end;
     }
     ++av; /* go past the program name. */
-
+    
     while(*av) {
         if(strstr(*av, "-v") || strstr(*av, "--version")) {
             goto prog_end;
         } else if(strstr(*av, "-t") || strstr(*av, "--type")) {
             ++av;
             if(!(*av)) {
-                printl(fatal, "expected a valid type, none given, aborting");
                 print_usage(cstr_digest(prog_name));
                 goto prog_end;
             }
@@ -67,13 +70,11 @@ int main(int ac, char **av) {
             if(!strcmp(*av, "python")) {
                 type = PYTHON_FILE;
             } else {
-                printl(warning, "invalid comment type given so asusming its a C file.");
                 type = C_FILE;
             }
         } else if(strstr(*av, "-o") || strstr(*av, "--output")) {
             ++av;
             if(!(*av)) {
-                printl(fatal, "expected a valid output file path, none given, aborting");
                 print_usage(cstr_digest(prog_name));
                 goto prog_end;
             }
@@ -96,39 +97,57 @@ int main(int ac, char **av) {
     }
 
     if(cstr_digest(license_file_path) == NULL) {
-        printl(fatal, "no license file path is given, giving up");
         print_usage(cstr_digest(prog_name));
         goto prog_end;
     }
 
     if(cstr_list_length(files) == 0) {
-        printl(fatal, "no files given, giving up");
         print_usage(cstr_digest(prog_name));
         goto prog_end;
     }
 
+    cutelog_mode(log_ctx, cutelog_multiline_mode);
+    cutelog_info(log_ctx, "Using %s as the license file.", cstr_digest(license_file_path));
+
     while(iter < cstr_list_length(files)) {
-        obj = fwriter_new(cstr_digest(license_file_path),
+	cutelog_mode(log_ctx, cutelog_non_multiline_mode);
+	cutelog_progress(log_ctx, "Formatting file(s) (%d/%d)... ",
+			 iter+1, cstr_list_length(files));
+	obj = fwriter_new(cstr_digest(license_file_path),
                           cstr_digest(cstr_list_get(files, iter)),
                           type,
                           is_replace,
                           in_place,
-                          cstr_digest(output));
+                          cstr_digest(output),
+			  log_ctx);
         if(obj == NULL) {
-            printl(fatal, "cannot construct file writer");
+            cutelog_mode(log_ctx, cutelog_multiline_mode);
+	    cutelog_fatal(log_ctx, "cannot construct file writer.");
             goto prog_end;
         }
 
         if(fwriter_exec(obj) < 0) {
-            printl(fatal, "file writer failed, giving up");
-            fwriter_free(obj);
-            goto prog_end;
-        }
+            cutelog_mode(log_ctx, cutelog_multiline_mode);
+            cutelog_fail(log_ctx, "Cannot format file %s." ,
+			cstr_digest(cstr_list_get(files, iter))); 
+	    fwriter_free(obj);
+	    ++iter;
+	    continue;
+	}
 
+	cutelog_mode(log_ctx, cutelog_multiline_mode);
+	cutelog_success(log_ctx, "Formatted file %s." ,
+			cstr_digest(cstr_list_get(files, iter))); 
         fwriter_free(obj);
-        ++iter;
+	++iter;
     }
+    cutelog_mode(log_ctx, cutelog_multiline_mode);
+    cutelog_success(log_ctx, "All process finished, freeing resource.");
 
+    printf("\nThank you for using lsrc %s, if you find this project use then please\n"
+	   "consider to %s this project at https://github.com/antony-jr/lsrc\n",
+	   heart_emoji,
+	   star_emoji);
 prog_end:
     /* free all resource, we don't need to worry about
      * if they are null or not.*/
@@ -136,6 +155,8 @@ prog_end:
     cstr_free(output);
     cstr_free(prog_name);
     cstr_list_free(files, True);
+    cutelog_safe_finish(log_ctx);
+    cutelog_free(log_ctx);
     return 0;
 }
 

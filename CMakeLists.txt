@@ -19,11 +19,11 @@ endif()
 include_directories(include)
 
 add_executable(lsrc include/cw.h
-	            include/logger.h
+	            include/cutelog.h
 		    include/cstr.h
 		    include/fwriter.h
 		    include/cstr_list.h
-		    src/logger.c
+		    src/cutelog.c
 		    src/cw.c
 		    src/cstr.c
 		    src/cstr_list.c
