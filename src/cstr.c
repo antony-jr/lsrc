@@ -87,6 +87,13 @@ void cstr_free(cstr_t obj) {
     free(obj);
 }
 
+int cstr_length(cstr_t obj, void *store){
+	size_t *mem = (size_t*)store;
+	if(obj == NULL || !mem)
+		return -1;
+	*mem = obj->pos;
+	return 0;
+}
 
 int cstr_prepend_char(cstr_t obj, char c) {
     size_t iter = 0;

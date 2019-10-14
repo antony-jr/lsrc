@@ -31,6 +31,7 @@ cstr_t cstr_new();
 cstr_t cstr_new_ex(const char*);
 void cstr_free(cstr_t);
 
+int cstr_length(cstr_t, void *);
 int cstr_prepend_char(cstr_t,char);
 int cstr_append_char(cstr_t,char);
 int cstr_prepend(cstr_t, const char*);
